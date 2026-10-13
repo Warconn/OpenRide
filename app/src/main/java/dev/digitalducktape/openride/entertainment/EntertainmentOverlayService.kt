@@ -288,7 +288,7 @@ class EntertainmentOverlayService : Service() {
             }
         }
         // Re-measure content width after collapse/metric selection.
-        panel?.let { windowManager.updateViewLayout(it, params) }
+        params?.let { layout -> panel?.let { windowManager.updateViewLayout(it, layout) } }
     }
 
     private fun updateValues() {
