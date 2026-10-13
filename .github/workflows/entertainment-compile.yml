@@ -1,0 +1,46 @@
+name: Entertainment Ride Kotlin compile
+
+on:
+  push:
+    branches: [feature/entertainment-ride-overlay]
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/entertainment-compile.yml'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      # The Ubuntu hosted runner already contains Android command-line tools.
+      # Avoid setup-android's deprecated SDK "tools" package installation.
+      - name: Install Android SDK 34
+        run: |
+          SDKMANAGER="$(find /usr/local/lib/android/sdk/cmdline-tools -type f -name sdkmanager | head -n 1)"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile real Bike+ Kotlin
+        run: ./gradlew :app:compileDebugRealKotlin
+      - name: Download Godot 4.7.2
+        run: |
+          curl --fail --location --retry 3 --output /tmp/godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          mkdir -p /tmp/openride-godot
+          unzip -q /tmp/godot.zip -d /tmp/openride-godot
+          chmod +x /tmp/openride-godot/Godot_v4.7.2-stable_linux.x86_64
+      - name: Package Bike+ test APK
+        env:
+          GODOT_BIN: /tmp/openride-godot/Godot_v4.7.2-stable_linux.x86_64
+        run: ./gradlew :app:assembleDebugReal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openride-entertainment-bikeplus-debug
+          path: app/build/outputs/apk/debugReal/*.apk
+          if-no-files-found: error
+          retention-days: 14
