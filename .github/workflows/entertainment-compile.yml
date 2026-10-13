@@ -21,7 +21,9 @@ jobs:
       # Avoid setup-android's deprecated SDK "tools" package installation.
       - name: Install Android SDK 34
         run: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          SDKMANAGER="$(find /usr/local/lib/android/sdk/cmdline-tools -type f -name sdkmanager | head -n 1)"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0"
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile real Bike+ Kotlin
         run: ./gradlew :app:compileDebugRealKotlin
