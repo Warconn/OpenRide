@@ -34,6 +34,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -136,12 +137,12 @@ class EntertainmentOverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(NOTIFICATION_ID, notification())
         hidden = when (intent?.action) {
             ACTION_SHOW -> false
-            ACTION_START -> !intent.getBooleanExtra(EXTRA_VISIBLE, true)
+            ACTION_START -> !(intent?.getBooleanExtra(EXTRA_VISIBLE, true) ?: true)
             else -> hidden
         }
+        startForeground(NOTIFICATION_ID, notification())
         if (hidden) removePanel() else showPanelIfAllowed()
         return START_NOT_STICKY
     }
