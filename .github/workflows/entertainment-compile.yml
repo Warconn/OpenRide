@@ -1,0 +1,25 @@
+name: Entertainment Ride Kotlin compile
+
+on:
+  push:
+    branches: [feature/entertainment-ride-overlay]
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/entertainment-compile.yml'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 34
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile real Bike+ Kotlin
+        run: ./gradlew :app:compileDebugRealKotlin

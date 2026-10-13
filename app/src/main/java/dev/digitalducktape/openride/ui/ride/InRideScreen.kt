@@ -18,6 +18,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import dev.digitalducktape.openride.entertainment.EntertainmentOverlayService
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,6 +56,8 @@ fun InRideScreen(
     val uiState by viewModel.uiState.collectAsState(initial = InRideUiState())
     val scope = rememberCoroutineScope()
     var showEndConfirmation by remember { mutableStateOf(false) }
+    var showEntertainmentDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -106,6 +110,9 @@ fun InRideScreen(
                     ) {
                         Text(if (uiState.isPaused) "Resume" else "Pause")
                     }
+                    OutlinedButton(onClick = { showEntertainmentDialog = true }) {
+                        Text("Entertainment")
+                    }
                     Button(onClick = { showEndConfirmation = true }) {
                         Text("End Ride")
                     }
@@ -129,6 +136,20 @@ fun InRideScreen(
 
             RideMetricsBar(uiState = uiState, translucent = false)
         }
+    }
+
+    if (showEntertainmentDialog) {
+        EntertainmentRideDialog(
+            onDismiss = { showEntertainmentDialog = false },
+            onLaunch = { target, showOverlay ->
+                val launched = EntertainmentRideLauncher.launch(context, target, showOverlay)
+                if (launched) showEntertainmentDialog = false
+            },
+            onRestoreOverlay = {
+                EntertainmentOverlayService.show(context)
+                showEntertainmentDialog = false
+            },
+        )
     }
 
     if (showEndConfirmation) {

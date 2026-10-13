@@ -5,6 +5,10 @@
     <!-- Required for the Classes content layer (PRD P0-6, T9/T10): fetching per-channel
          YouTube RSS feeds and loading thumbnails via Coil both need network access. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Entertainment ride: opt-in floating HUD and continued ride capture while another app is foregrounded. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <!-- BLE heart-rate strap pairing/connection (PRD P1-4, T17). Two permission sets, split by
          API level (see core/heartrate/BlePermissions.kt):
@@ -55,6 +59,10 @@
          30+, package visibility filtering hides the camera app unless the intent is declared
          here — without this the launch just fails as "no camera app available". -->
     <queries>
+        <!-- Allow launch-intent lookup for optional entertainment apps on Android 11+. -->
+        <package android:name="com.plexapp.android" />
+        <package android:name="com.amazon.kindle" />
+        <package android:name="com.google.android.apps.youtube.unplugged" />
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
@@ -68,6 +76,16 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.OpenRide"
         android:supportsRtl="true">
+
+        <!-- Runs only during an explicitly started entertainment ride. Does not replace Peloton. -->
+        <service
+            android:name=".entertainment.EntertainmentOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-started cycling session recording and optional floating workout metrics while viewing other apps" />
+        </service>
 
         <activity
             android:name=".MainActivity"

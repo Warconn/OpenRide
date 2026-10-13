@@ -62,7 +62,8 @@ android {
         //     ./gradlew :app:installDebugReal
         create("debugReal") {
             initWith(getByName("debug"))
-            applicationIdSuffix = ".real"
+            // Separate test package: can coexist with stock OpenRide and Peloton.
+            applicationIdSuffix = ".entertainment"
             versionNameSuffix = "-real"
             buildConfigField("boolean", "USE_REAL_BIKE_SENSOR", "true")
             // This is the build published to the bike, so it updates from the `real` asset.
