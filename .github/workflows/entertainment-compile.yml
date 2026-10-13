@@ -27,3 +27,20 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile real Bike+ Kotlin
         run: ./gradlew :app:compileDebugRealKotlin
+      - name: Download Godot 4.7.2
+        run: |
+          curl --fail --location --retry 3 --output /tmp/godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          mkdir -p /tmp/openride-godot
+          unzip -q /tmp/godot.zip -d /tmp/openride-godot
+          chmod +x /tmp/openride-godot/Godot_v4.7.2-stable_linux.x86_64
+      - name: Package Bike+ test APK
+        env:
+          GODOT_BIN: /tmp/openride-godot/Godot_v4.7.2-stable_linux.x86_64
+        run: ./gradlew :app:assembleDebugReal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openride-entertainment-bikeplus-debug
+          path: app/build/outputs/apk/debugReal/*.apk
+          if-no-files-found: error
+          retention-days: 14
